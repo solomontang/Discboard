@@ -3,7 +3,7 @@ import path from 'path';
 const distDir = path.join(__dirname, 'public/dist');
 
 const config = {
-  entry: './client/src/app',
+  entry: './bot/bot',
   output: {
     path: distDir,
     filename: 'bundle.js'
@@ -12,7 +12,7 @@ const config = {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        include: path.join(__dirname, 'client/src'),
+        include: path.join(__dirname, 'bot/'),
         exclude: ['node_modules'],
         use: [
           {
@@ -25,6 +25,7 @@ const config = {
       }
     ]
   },
+  target: 'node',
   devtool: 'source-map'
   // plugins: [new webpack.HotModuleReplacementPlugin()],
   // devServer: {
