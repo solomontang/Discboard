@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = function ChatWheel(message, currentVoiceChannel, command, args) {
   console.log('in chatwheel');
   console.log(args);
@@ -13,7 +15,7 @@ module.exports = function ChatWheel(message, currentVoiceChannel, command, args)
     } else if (currentVoiceChannel) {
       currentVoiceChannel.then(connection => { // Connection is an instance of VoiceConnection
         //LOCAL FILES
-        const dispatch = connection.playFile( `/Users/solomontang/Projects/Discboard/static/${args[0]}.wav`, {volume: 0.5} );
+        const dispatch = connection.playFile( path.resolve('static', args[0] + '.wav'), {volume: 0.3} );
 
         //TODO: STREAM REMOTE HOSTED FILE TO PLAYSTREAM
 
