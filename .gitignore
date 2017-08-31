@@ -45,5 +45,5 @@ static/
 #yarn.lock
 
 config.json
-
+ssh.txt
 discboard.pem

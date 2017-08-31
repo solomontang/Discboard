@@ -15,7 +15,7 @@ module.exports = function ChatWheel(message, currentVoiceChannel, command, args)
     } else if (currentVoiceChannel) {
       currentVoiceChannel.then(connection => { // Connection is an instance of VoiceConnection
         //LOCAL FILES
-        const dispatch = connection.playFile( path.resolve('static', args[0] + '.wav'), {volume: 0.3} );
+        const dispatch = connection.playFile( path.resolve('static', args[0] + '.wav'), {volume: 0.2} );
 
         //TODO: STREAM REMOTE HOSTED FILE TO PLAYSTREAM
 
