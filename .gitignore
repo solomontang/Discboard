@@ -37,7 +37,13 @@ dist/
 node_modules/
 bower_components/
 
+# Static files
+
+static/
+
 #package-lock.json
 #yarn.lock
 
 config.json
+
+

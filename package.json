@@ -8,10 +8,13 @@
   "author": "Solomon Tang",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.16.2",
     "babel-core": "^6.24.1",
     "bluebird": "^3.5.0",
     "discord.js": "^11.1.0",
-    "node-opus": "^0.2.6"
+    "node-opus": "^0.2.6",
+    "request": "^2.81.0",
+    "ytdl-core": "^0.17.0"
   },
   "devDependencies": {
     "babel-loader": "^7.0.0",
