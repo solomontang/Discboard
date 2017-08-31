@@ -1,8 +1,6 @@
 const path = require('path');
 
 module.exports = function ChatWheel(message, currentVoiceChannel, command, args) {
-  console.log('in chatwheel');
-  console.log(args);
   if (!message.guild) return;
   // Only try to join the sender's voice channel if they are in one themselves
   if (message.member.voiceChannel) {
@@ -16,7 +14,9 @@ module.exports = function ChatWheel(message, currentVoiceChannel, command, args)
       currentVoiceChannel.then(connection => { // Connection is an instance of VoiceConnection
         //LOCAL FILES
         const dispatch = connection.playFile( path.resolve('static', args[0] + '.wav'), {volume: 0.2} );
-
+        dispatch.on('start', () => {
+          message.delete();
+        });
         //TODO: STREAM REMOTE HOSTED FILE TO PLAYSTREAM
 
         // axios({
