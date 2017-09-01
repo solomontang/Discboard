@@ -12,10 +12,6 @@ module.exports = class ChatWheelCommand extends Command {
       memberName: 'chatwheel',
       description: 'Plays ChatWheel soundboard clips.',
       details: 'Invoke Dota 2 chat wheel sound bites in the voice channel the bot is currently in. You must also be in the same voice channel.',
-      examples: ['chatwheel waow',
-                 'chat alldead',
-                 'c disastah',
-                 'c 5'],
       args: [
         {
           key: 'params',
@@ -36,11 +32,14 @@ module.exports = class ChatWheelCommand extends Command {
     this.validParams = fs.readdirSync('./static/').map( name => {
       return name.slice(0, name.lastIndexOf('.'));
     });
+    this.currentVoiceChannel;
   }
 
   async run(msg, args) {
     if (args.params === 'help') {
       return this.replyHelp(msg);
+    } else if (args.params === 'join') {
+      this.currentVoiceChannel = msg.member.voiceChannel.join();
     } else {
       return msg.reply('gonna play the clip!');
     }

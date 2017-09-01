@@ -1,7 +1,7 @@
 const commando = require('discord.js-commando');
 const path = require('path');
 const config = require('../config.json');
-const stripIndent = require('common-tags').oneLine;
+const oneLine = require('common-tags').oneLine;
 
 const client = new commando.Client({
   owner: '131209725646733312',
