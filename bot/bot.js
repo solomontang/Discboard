@@ -24,7 +24,7 @@ client.on('message', message => {
   if (command === 'ping') {
     message.reply('pong');
   } else if (command === 'c' || command === 'chat') {
-    currentVoiceConnection = ChatWheel(message, currentVoiceConnection, command, args);
+    currentVoiceConnection = ChatWheel(message, currentVoiceConnection, args);
   } else {
     return;
   }

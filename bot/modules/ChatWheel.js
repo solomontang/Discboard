@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = function ChatWheel(message, currentVoiceConnection, command, args) {
+module.exports = function ChatWheel(message, currentVoiceConnection, args) {
   if (!message.guild) return;
 
   // Only try to join the sender's voice channel if they are in one themselves
@@ -21,24 +21,10 @@ module.exports = function ChatWheel(message, currentVoiceConnection, command, ar
             message.delete();
           });
         } else {
-          message.reply.send(`Join the [${connection.channel.name}] voice channel if you want to use the ChatWheel.`);
+          message.reply(`Join the [${connection.channel.name}] voice channel if you want to use the ChatWheel`);
         }
         
         //TODO: STREAM REMOTE HOSTED FILE TO PLAYSTREAM
-
-        // axios({
-        //   method:'get',
-        //   url:'https://dota2.gamepedia.com/media/dota2.gamepedia.com/b/bf/Chatwheel_frog.wav',
-        //   responseType:'octet-stream'
-        // })
-        //   .then(function(response) {
-        //     // console.log(response.data);
-        //     connection.playStream(response.data);
-        //   });
-
-        //YOUTUBE STREAM
-        // const stream = ytdl('https://www.youtube.com/watch?v=XAWgeLF9EVQ', { filter : 'audioonly' });
-        // const dispatcher = connection.playStream(stream);
       })
       .catch(console.log);
     }
