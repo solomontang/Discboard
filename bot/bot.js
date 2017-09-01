@@ -1,33 +1,55 @@
-const Discord = require('discord.js');
-const config = require('../config.json')
-// const axios = require('axios');
-// const request = require('request');
-const fs = require('fs');
-// const ytdl = require('ytdl-core');
+const commando = require('discord.js-commando');
+const path = require('path');
+const config = require('../config.json');
+const stripIndent = require('common-tags').oneLine;
 
-const client = new Discord.Client();
-
-const ChatWheel = require('./modules/ChatWheel');
-
-var currentVoiceConnection = null;
-
-client.on('ready', () => {
-  console.log('I am ready!');
+const client = new commando.Client({
+  owner: '131209725646733312',
+  commandPrefix: '!'
 });
 
-client.on('message', message => {
-  if (message.content[0] !== config.prefix) return;
-
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-  const command = args.shift().toLowerCase();
-
-  if (command === 'ping') {
-    message.reply('pong');
-  } else if (command === 'c' || command === 'chat') {
-    currentVoiceConnection = ChatWheel(message, currentVoiceConnection, args);
-  } else {
-    return;
-  }
-});
+client
+  .on('error', console.error)
+  .on('warn', console.warn)
+  .on('debug', console.log)
+  .on('ready', () => {
+    console.log(`Client ready; logged in as ${client.user.username}#${client.user.discriminator} (${client.user.id})`);
+  })
+  .on('disconnect', () => { console.warn('Disconnected!'); })
+  .on('reconnecting', () => { console.warn('Reconnecting...'); })
+  .on('commandError', (cmd, err) => {
+    if(err instanceof commando.FriendlyError) return;
+    console.error(`Error in command ${cmd.groupID}:${cmd.memberName}`, err);
+  })
+  .on('commandBlocked', (msg, reason) => {
+    console.log(oneLine`
+      Command ${msg.command ? `${msg.command.groupID}:${msg.command.memberName}` : ''}
+      blocked; ${reason}
+    `);
+  })
+  .on('commandPrefixChange', (guild, prefix) => {
+    console.log(oneLine`
+      Prefix ${prefix === '' ? 'removed' : `changed to ${prefix || 'the default'}`}
+      ${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
+    `);
+  })
+  .on('commandStatusChange', (guild, command, enabled) => {
+    console.log(oneLine`
+      Command ${command.groupID}:${command.memberName}
+      ${enabled ? 'enabled' : 'disabled'}
+      ${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
+    `);
+  })
+  .on('groupStatusChange', (guild, group, enabled) => {
+    console.log(oneLine`
+      Group ${group.id}
+      ${enabled ? 'enabled' : 'disabled'}
+      ${guild ? `in guild ${guild.name} (${guild.id})` : 'globally'}.
+    `);
+  });
+client.registry
+  .registerGroup('chatwheel', 'Chat Wheel')
+  .registerDefaults()
+  .registerCommandsIn(path.join(__dirname, 'commands'));
 
 client.login(config.token);
