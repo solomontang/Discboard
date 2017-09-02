@@ -5,7 +5,8 @@ const oneLine = require('common-tags').oneLine;
 
 const client = new commando.Client({
   owner: '131209725646733312',
-  commandPrefix: '!'
+  commandPrefix: '!',
+  unknownCommandResponse: false
 });
 
 client
@@ -48,8 +49,8 @@ client
     `);
   });
 client.registry
-  .registerGroup('chatwheel', 'Chat Wheel')
   .registerDefaults()
+  .registerGroup('chatwheel', 'Chat Wheel')
   .registerCommandsIn(path.join(__dirname, 'commands'));
 
 client.login(config.token);

@@ -1,11 +1,11 @@
 const { Command } = require('discord.js-commando');
 const fs = require('fs');
 const { stripIndent } = require('common-tags');
+const path = require('path');
 
 module.exports = class ChatWheelCommand extends Command {
   constructor(client) {
     super(client, {
-      prefix: 'what is happening',
       name: 'chatwheel',
       aliases: ['chat', 'c'],
       group: 'chatwheel',
@@ -32,20 +32,39 @@ module.exports = class ChatWheelCommand extends Command {
     this.validParams = fs.readdirSync('./static/').map( name => {
       return name.slice(0, name.lastIndexOf('.'));
     });
-    this.currentVoiceChannel;
+    console.log(this.validParams);
+    this.currentVoiceConnection = null;
   }
 
   async run(msg, args) {
-    if (args.params === 'help') {
-      return this.replyHelp(msg);
-    } else if (args.params === 'join') {
-      this.currentVoiceChannel = msg.member.voiceChannel.join();
+
+    if (msg.member.voiceChannel) {
+      if (args.params === 'help') {
+        return this.replyHelp(msg);
+      } else if (args.params === 'join') {
+        this.currentVoiceConnection = await msg.member.voiceChannel.join();
+      } else if (args.params === 'leave' && this.currentVoiceConnection) {
+        this.currentVoiceConnection = this.currentVoiceConnection.disconnect();
+      } else {
+        if (this.currentVoiceConnection) {
+          if (this.currentVoiceConnection.channel.id === msg.member.voiceChannel.id) {
+            console.log(path.resolve('static', args.params + '.wav'));
+            const dispatch = this.currentVoiceConnection.playFile( path.resolve('static', args.params + '.wav'), {volume: 0.2} );
+            dispatch.on('start', () => {
+              msg.delete();
+            });
+          } else {
+            msg.reply(`Join the [${this.currentVoiceConnection.channel.name}] voice channel if you want to use the ChatWheel`);
+          }
+        }
+      }
     } else {
-      return msg.reply('gonna play the clip!');
+      msg.reply('You must join a voice channel first!');
     }
+    return;
   }
 
-  replyHelp(msg) {
+  async replyHelp(msg) {
     const {name, prefix} = this;
     return msg.embed({
       title: 'Command: ' + prefix + name,
@@ -55,7 +74,7 @@ module.exports = class ChatWheelCommand extends Command {
   }
 
   helpDescription() {
-    const {name, aliases, prefix, description, details, examples, validParams} = this;
+    const {name, aliases, prefix, description, details, validParams} = this;
     return stripIndent`
     **Aliases**: ${aliases.join(', ')}
     **Description**: ${description}
