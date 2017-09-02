@@ -1507,6 +1507,10 @@ faye-websocket@~0.11.0:
   dependencies:
     websocket-driver ">=0.5.1"
 
+ffmpeg-binaries@^3.2.2-3:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/ffmpeg-binaries/-/ffmpeg-binaries-3.2.2.tgz#370f3020ef6b4dba62a551a425c634d6c75a3a21"
+
 filename-regex@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.1.tgz#c1c4b9bee3e09725ddb106b75c1e301fe2f18b26"
