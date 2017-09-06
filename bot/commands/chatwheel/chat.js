@@ -2,6 +2,7 @@ const { Command } = require('discord.js-commando');
 const fs = require('fs');
 const { stripIndent } = require('common-tags');
 const path = require('path');
+// const axios = require('axios');
 
 module.exports = class ChatWheelCommand extends Command {
   constructor(client) {
@@ -29,7 +30,8 @@ module.exports = class ChatWheelCommand extends Command {
       },
     });
     this.prefix = client.options.commandPrefix;
-    this.validParams = fs.readdirSync('./static/').map( name => {
+    // console.log(path.resolve(__dirname, '../../../static'));
+    this.validParams = fs.readdirSync(path.resolve(__dirname, '../../../static')).map( name => {
       return name.slice(0, name.lastIndexOf('.'));
     });
     console.log(this.validParams);
@@ -50,6 +52,17 @@ module.exports = class ChatWheelCommand extends Command {
           if (this.currentVoiceConnection.channel.id === msg.member.voiceChannel.id) {
             console.log(path.resolve('static', args.params + '.wav'));
             const dispatch = this.currentVoiceConnection.playFile( path.resolve('static', args.params + '.wav'), {volume: 0.2} );
+            // axios({
+            //   method:'get',
+            //   url:'https://dota2.gamepedia.com/media/dota2.gamepedia.com/b/bf/Chatwheel_frog.wav',
+            //   responseType:'stream'
+            // })
+            //   .then(function(response) {
+            //     // console.log(response.data);
+            //     console.log('getting wav')
+            //     // response.data.pipe(fs.createWriteStream('TESTING.wav'));
+            //     connection.playStream(response.data);
+            //   });
             dispatch.on('start', () => {
               msg.delete();
             });
