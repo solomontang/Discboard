@@ -8,28 +8,13 @@
   "author": "Solomon Tang",
   "license": "MIT",
   "dependencies": {
-    "babel-core": "^6.24.1",
+    "axios": "^0.17.1",
     "bluebird": "^3.5.0",
     "common-tags": "^1.4.0",
     "discord.js": "^11.1.0",
     "discord.js-commando": "^0.9.0",
     "ffmpeg-binaries": "^3.2.2-3",
-    "node-opus": "^0.2.6"
-  },
-  "devDependencies": {
-    "babel-loader": "^7.0.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
-    "babel-preset-latest": "^6.24.0",
-    "babel-preset-react": "^6.23.0",
-    "babel-preset-stage-2": "^6.24.1",
-    "chai": "^3.5.0",
-    "mocha": "^3.2.0",
-    "webpack": "^2.3.2",
-    "webpack-dev-server": "^2.4.2"
-  },
-  "babel": {
-    "plugins": [
-      "transform-es2015-modules-commonjs"
-    ]
+    "node-opus": "^0.2.7",
+    "prism-media": "git://github.com/hydrabolt/prism-media.git#indev"
   }
 }

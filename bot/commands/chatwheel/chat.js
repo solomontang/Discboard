@@ -2,7 +2,9 @@ const { Command } = require('discord.js-commando');
 const fs = require('fs');
 const { stripIndent } = require('common-tags');
 const path = require('path');
-// const axios = require('axios');
+const axios = require('axios');
+const spawn = require('child_process').spawn;
+const prism = require('prism-media');
 
 module.exports = class ChatWheelCommand extends Command {
   constructor(client) {
@@ -50,19 +52,31 @@ module.exports = class ChatWheelCommand extends Command {
       } else {
         if (this.currentVoiceConnection) {
           if (this.currentVoiceConnection.channel.id === msg.member.voiceChannel.id) {
-            console.log(path.resolve('static', args.params + '.wav'));
-            const dispatch = this.currentVoiceConnection.playFile( path.resolve('static', args.params + '.wav'), {volume: 0.2} );
-            // axios({
-            //   method:'get',
-            //   url:'https://dota2.gamepedia.com/media/dota2.gamepedia.com/b/bf/Chatwheel_frog.wav',
-            //   responseType:'stream'
-            // })
-            //   .then(function(response) {
-            //     // console.log(response.data);
-            //     console.log('getting wav')
-            //     // response.data.pipe(fs.createWriteStream('TESTING.wav'));
-            //     connection.playStream(response.data);
-            //   });
+            let clipPath = path.resolve('static', args.params + '.wav')
+            console.log(clipPath);
+            // const dispatch = this.currentVoiceConnection.playFile( clipPath, {volume: 0.2} );
+            let clipPromise = axios({
+              method:'get',
+              url:'https://d1u5p3l4wpay3k.cloudfront.net/dota2_gamepedia/c/c9/Chatwheel_rimshot.wav',
+              responseType:'stream'
+            });
+            const clip = await Promise.resolve(clipPromise);
+
+            // save clip to disk
+            // clip.data.pipe(fs.createWriteStream('test.wav'));
+            const transcoder = new prism.FFmpeg({
+              args: [
+                '-analyzeduration', '0',
+                '-loglevel', '0',
+                '-f', 's16le',
+                '-ar', '48000',
+                '-ac', '2',
+              ],
+            });
+            const dispatch = this.currentVoiceConnection.playConvertedStream(clip.data.pipe(transcoder));
+            // const broadcast = this.client.createVoiceBroadcast().playConvertedStream(clip.data);
+            // /*const dispatch = */this.currentVoiceConnection.playConvertedStream(clip.data);
+            //delete msg upon dispatch
             dispatch.on('start', () => {
               msg.delete();
             });
