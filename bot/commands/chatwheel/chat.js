@@ -6,6 +6,7 @@ const axios = require('axios');
 const spawn = require('child_process').spawn;
 const prism = require('prism-media');
 
+//TODO: Refactor to check if msg sender's current VoiceConnection is within Client.VoiceConnections
 module.exports = class ChatWheelCommand extends Command {
   constructor(client) {
     super(client, {
@@ -33,25 +34,28 @@ module.exports = class ChatWheelCommand extends Command {
     });
     this.prefix = client.options.commandPrefix;
     // console.log(path.resolve(__dirname, '../../../static'));
+    //Apparently this only works when PM2 is run from within Discboard folder?
     this.validParams = fs.readdirSync(path.resolve(__dirname, '../../../static')).map( name => {
       return name.slice(0, name.lastIndexOf('.'));
     });
-    console.log(this.validParams);
-    this.currentVoiceConnection = null;
+    // console.log(this.validParams);
   }
 
   async run(msg, args) {
+    //TODO: this if chain is fucking gross. find a way to make it less so
+    let currentVoiceConnection = this.client.voiceConnections.get(msg.guild.id)
 
     if (msg.member.voiceChannel) {
       if (args.params === 'help') {
         return this.replyHelp(msg);
+      } else if (args.params === 'channels') { //Check current voiceConnections
+        console.log(currentVoiceConnection);
       } else if (args.params === 'join') {
-        this.currentVoiceConnection = await msg.member.voiceChannel.join();
-      } else if (args.params === 'leave' && this.currentVoiceConnection) {
-        this.currentVoiceConnection = this.currentVoiceConnection.disconnect();
+        await msg.member.voiceChannel.join(); //What is the impact of (not) having `await`
+      } else if (args.params === 'leave') {
+        currentVoiceConnection.disconnect();
       } else {
-        if (this.currentVoiceConnection) {
-          if (this.currentVoiceConnection.channel.id === msg.member.voiceChannel.id) {
+          if (currentVoiceConnection) {
             let clipPath = path.resolve('static', args.params + '.wav')
             console.log(clipPath);
             // const dispatch = this.currentVoiceConnection.playFile( clipPath, {volume: 0.2} );
@@ -64,6 +68,8 @@ module.exports = class ChatWheelCommand extends Command {
 
             // save clip to disk
             // clip.data.pipe(fs.createWriteStream('test.wav'));
+            
+            //Transcode file to 48000 sampling rate
             const transcoder = new prism.FFmpeg({
               args: [
                 '-analyzeduration', '0',
@@ -73,17 +79,16 @@ module.exports = class ChatWheelCommand extends Command {
                 '-ac', '2',
               ],
             });
-            const dispatch = this.currentVoiceConnection.playConvertedStream(clip.data.pipe(transcoder));
-            // const broadcast = this.client.createVoiceBroadcast().playConvertedStream(clip.data);
-            // /*const dispatch = */this.currentVoiceConnection.playConvertedStream(clip.data);
-            //delete msg upon dispatch
+
+            const dispatch = currentVoiceConnection.playConvertedStream(clip.data.pipe(transcoder));
+
             dispatch.on('start', () => {
               msg.delete();
             });
-          } else {
-            msg.reply(`Join the [${this.currentVoiceConnection.channel.name}] voice channel if you want to use the ChatWheel`);
-          }
-        }
+          } 
+          // else {
+          //   msg.reply(`Join the [${this.currentVoiceConnection.channel.name}] voice channel if you want to use the ChatWheel`);
+          // }
       }
     } else {
       msg.reply('You must join a voice channel first!');
