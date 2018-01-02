@@ -3,9 +3,10 @@ const fs = require('fs');
 const { stripIndent } = require('common-tags');
 const path = require('path');
 const axios = require('axios');
-const spawn = require('child_process').spawn;
+// const spawn = require('child_process').spawn;
 const prism = require('prism-media');
 const { performance } = require('perf_hooks');
+const { url } = require('../../../config.json');
 
 //TODO: Refactor to check if msg sender's current VoiceConnection is within Client.VoiceConnections
 module.exports = class ChatWheelCommand extends Command {
@@ -61,8 +62,8 @@ module.exports = class ChatWheelCommand extends Command {
             console.log(clipPath);
             // const dispatch = this.currentVoiceConnection.playFile( clipPath, {volume: 0.2} );
             let clipPromise = await axios({
-              method:'get',
-              url:'https://d1u5p3l4wpay3k.cloudfront.net/dota2_gamepedia/c/c9/Chatwheel_rimshot.wav',
+              method:'GET',
+              url: url + '/' + args.params + '.wav',
               responseType:'stream'
             });
             // const clip = await Promise.resolve(clipPromise);
