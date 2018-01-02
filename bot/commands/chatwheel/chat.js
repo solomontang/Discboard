@@ -5,6 +5,7 @@ const path = require('path');
 const axios = require('axios');
 const spawn = require('child_process').spawn;
 const prism = require('prism-media');
+const { performance } = require('perf_hooks');
 
 //TODO: Refactor to check if msg sender's current VoiceConnection is within Client.VoiceConnections
 module.exports = class ChatWheelCommand extends Command {
@@ -44,7 +45,7 @@ module.exports = class ChatWheelCommand extends Command {
   async run(msg, args) {
     //TODO: this if chain is fucking gross. find a way to make it less so
     let currentVoiceConnection = this.client.voiceConnections.get(msg.guild.id)
-
+    let start = performance.now();
     if (msg.member.voiceChannel) {
       if (args.params === 'help') {
         return this.replyHelp(msg);
@@ -59,12 +60,12 @@ module.exports = class ChatWheelCommand extends Command {
             let clipPath = path.resolve('static', args.params + '.wav')
             console.log(clipPath);
             // const dispatch = this.currentVoiceConnection.playFile( clipPath, {volume: 0.2} );
-            let clipPromise = axios({
+            let clipPromise = await axios({
               method:'get',
               url:'https://d1u5p3l4wpay3k.cloudfront.net/dota2_gamepedia/c/c9/Chatwheel_rimshot.wav',
               responseType:'stream'
             });
-            const clip = await Promise.resolve(clipPromise);
+            // const clip = await Promise.resolve(clipPromise);
 
             // save clip to disk
             // clip.data.pipe(fs.createWriteStream('test.wav'));
@@ -80,10 +81,11 @@ module.exports = class ChatWheelCommand extends Command {
               ],
             });
 
-            const dispatch = currentVoiceConnection.playConvertedStream(clip.data.pipe(transcoder));
+            const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data.pipe(transcoder));
 
             dispatch.on('start', () => {
               msg.delete();
+              console.log(performance.now() - start);
             });
           } 
           // else {
