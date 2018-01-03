@@ -7,6 +7,8 @@ const axios = require('axios');
 const prism = require('prism-media');
 const { performance } = require('perf_hooks');
 const { url } = require('../../../config.json');
+const xml2js = require('xml2js');
+
 
 //TODO: Refactor to check if msg sender's current VoiceConnection is within Client.VoiceConnections
 module.exports = class ChatWheelCommand extends Command {
@@ -58,37 +60,39 @@ module.exports = class ChatWheelCommand extends Command {
         currentVoiceConnection.disconnect();
       } else {
           if (currentVoiceConnection) {
-            let clipPath = path.resolve('static', args.params + '.wav')
-            console.log(clipPath);
-            // const dispatch = this.currentVoiceConnection.playFile( clipPath, {volume: 0.2} );
-            let clipPromise = await axios({
-              method:'GET',
-              url: url + '/' + args.params + '.wav',
-              responseType:'stream'
-            });
-            // const clip = await Promise.resolve(clipPromise);
-
-            // save clip to disk
-            // clip.data.pipe(fs.createWriteStream('test.wav'));
-            
-            //Transcode file to 48000 sampling rate
-            const transcoder = new prism.FFmpeg({
-              args: [
-                '-analyzeduration', '0',
-                '-loglevel', '0',
-                '-f', 's16le',
-                '-ar', '48000',
-                '-ac', '2',
-              ],
-            });
-
-            const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data.pipe(transcoder));
-
-            dispatch.on('start', () => {
-              msg.delete();
-              console.log(performance.now() - start);
-            });
-          } 
+            try {
+              let clipPromise = await axios({
+                method:'GET',
+                url: url + '/' + args.params + '.wav',
+                responseType:'stream'
+              });
+              
+              //Transcode file to 48000 sampling rate
+              const transcoder = new prism.FFmpeg({
+                args: [
+                  '-analyzeduration', '0',
+                  '-loglevel', '0',
+                  '-f', 's16le',
+                  '-ar', '48000',
+                  '-ac', '2',
+                ],
+              });
+  
+              const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data.pipe(transcoder), {volume: 0.2});
+  
+              dispatch.on('start', () => {
+                msg.delete();
+                console.log(performance.now() - start);
+              }); 
+            } catch(e) {
+              if (e.response.status == 404) {
+                msg.delete();
+                msg.reply(args.params + ' is not an available parameter. Please refer to !c help')
+              } else {
+                msg.reply('something is fucked');
+              }
+            }
+          }
           // else {
           //   msg.reply(`Join the [${this.currentVoiceConnection.channel.name}] voice channel if you want to use the ChatWheel`);
           // }
@@ -101,6 +105,12 @@ module.exports = class ChatWheelCommand extends Command {
 
   async replyHelp(msg) {
     const {name, prefix} = this;
+    let XMLParser = new xml2js.Parser();
+    axios.get(url).then(res => {
+      XMLParser.parseString(res.data, (err, result) => {
+        console.log(result.ListBucketResult.Contents);
+      })
+    })
     return msg.embed({
       title: 'Command: ' + prefix + name,
       description: this.helpDescription(),
