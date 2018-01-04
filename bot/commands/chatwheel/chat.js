@@ -63,28 +63,33 @@ module.exports = class ChatWheelCommand extends Command {
             try {
               let clipPromise = await axios({
                 method:'GET',
-                url: url + '/' + args.params + '.wav',
+                url: url + '/transcoded/' + args.params + '.wav',
                 responseType:'stream'
               });
               
               //Transcode file to 48000 sampling rate
-              const transcoder = new prism.FFmpeg({
-                args: [
-                  '-analyzeduration', '0',
-                  '-loglevel', '0',
-                  '-f', 's16le',
-                  '-ar', '48000',
-                  '-ac', '2',
-                ],
-              });
+              // const transcoder = new prism.FFmpeg({
+              //   args: [
+              //     '-analyzeduration', '0',
+              //     '-loglevel', '0',
+              //     '-f', 'wav',
+              //     '-ar', '48000',
+              //     '-ac', '2'
+              //   ],
+              // });
   
-              const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data.pipe(transcoder), {volume: 0.2});
+              const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
+
+              // let filename = 'transcoded/' + args.params + '.pcm';
+              // const dispatch = currentVoiceConnection.playFile('waow.wav');
+              // clipPromise.data.pipe(transcoder).pipe(fs.createWriteStream(filename));
   
               dispatch.on('start', () => {
                 msg.delete();
                 console.log(performance.now() - start);
               }); 
             } catch(e) {
+              console.log(e)
               if (e.response.status == 404) {
                 msg.delete();
                 msg.reply(args.params + ' is not an available parameter. Please refer to !c help')
