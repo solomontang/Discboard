@@ -1,16 +1,10 @@
 const { Command } = require('discord.js-commando');
-const fs = require('fs');
-const { stripIndent } = require('common-tags');
-const path = require('path');
+const { stripIndent, oneLine } = require('common-tags');
 const axios = require('axios');
-// const spawn = require('child_process').spawn;
-// const prism = require('prism-media');
 const { performance } = require('perf_hooks');
 const { url } = require('../../../config.json');
 const xml2js = require('xml2js');
 
-
-//TODO: Refactor to check if msg sender's current VoiceConnection is within Client.VoiceConnections
 module.exports = class ChatWheelCommand extends Command {
   constructor(client) {
     super(client, {
@@ -37,12 +31,6 @@ module.exports = class ChatWheelCommand extends Command {
       },
     });
     this.prefix = client.options.commandPrefix;
-    // console.log(path.resolve(__dirname, '../../../static'));
-    //Apparently this only works when PM2 is run from within Discboard folder?
-    this.validParams = fs.readdirSync(path.resolve(__dirname, '../../../static')).map( name => {
-      return name.slice(0, name.lastIndexOf('.'));
-    });
-    // console.log(this.validParams);
   }
 
   async run(msg, args) {
@@ -52,35 +40,13 @@ module.exports = class ChatWheelCommand extends Command {
     if (msg.member.voiceChannel) {
       if (args.params === 'help') {
         return this.replyHelp(msg);
-      } else if (args.params === 'channels') { //Check current voiceConnections
-        console.log(currentVoiceConnection);
       } else if (args.params === 'join') {
-        await msg.member.voiceChannel.join(); //What is the impact of (not) having `await`
+        msg.member.voiceChannel.join(); //What is the impact of (not) having `await`
       } else if (args.params === 'leave') {
         currentVoiceConnection.disconnect();
       } else {
         if (currentVoiceConnection) {
-          let clipPromise;
-          try {
-            clipPromise = await axios({
-              method:'GET',
-              url: url + '/transcoded/' + args.params + '.wav',
-              responseType:'stream'
-            });
-          } catch(e) {
-            if (e.response.status == 404) {
-              msg.delete();
-              msg.reply(args.params + ' is not an available parameter. Please refer to !c help')
-            } else {
-              msg.reply('something is fucked');
-            }
-          }
-          const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
-
-          dispatch.on('start', () => {
-            msg.delete();
-            console.log(performance.now() - start);
-          });
+          this.streamClip(msg, args.params, start)
         }
       }
     } else {
@@ -89,12 +55,48 @@ module.exports = class ChatWheelCommand extends Command {
     return;
   }
 
-  replyHelp(msg) {
+  async streamClip(msg, param, start) {
+    let clipPromise, dispatchTime, fetchTime, fetchStart;
+    let currentVoiceConnection = this.client.voiceConnections.get(msg.guild.id);
+    try {
+      fetchStart = performance.now();
+      clipPromise = await axios({
+        method:'GET',
+        url: url + '/transcoded/' + param + '.wav',
+        responseType:'stream'
+      });
+    } catch(e) {
+      if (e.response.status == 404) {
+        msg.delete();
+        msg.reply(param + ' is not an available parameter. Please refer to !c help')
+      } else {
+        msg.reply('something is fucked');
+      }
+    }
+    fetchTime =  performance.now() - fetchStart;
+    const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
+
+    dispatch.on('start', () => {
+      msg.delete();
+      dispatchTime = Date.now();
+    });
+
+    // dispatch.on('end', async () => {
+    //   const pingMsg = await msg.reply('Pinging...');
+		// 	return pingMsg.edit(oneLine`
+		// 		${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
+		// 		Pong! The message round-trip took ${dispatchTime - msg.createdTimestamp}ms.
+		// 		The clip fetch time was ${fetchTime}ms.
+		// 	`);
+    // })
+  }
+
+  async replyHelp(msg) {
     const {name, prefix} = this;
     let XMLParser = new xml2js.Parser();
     axios.get(url).then(res => {
       XMLParser.parseString(res.data, (err, result) => {
-        console.log(result.ListBucketResult.Contents);
+        console.log(result.ListBucketResult);
       })
     })
     return msg.embed({

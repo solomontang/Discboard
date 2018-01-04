@@ -2,7 +2,7 @@
   "name": "discboard",
   "version": "0.0.1",
   "scripts": {
-    "start": "pm2 bot/bot.js",
+    "start": "pm2 start bot/bot.js",
     "build": "webpack --watch"
   },
   "author": "Solomon Tang",
