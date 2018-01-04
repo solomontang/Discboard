@@ -4,7 +4,7 @@ const { stripIndent } = require('common-tags');
 const path = require('path');
 const axios = require('axios');
 // const spawn = require('child_process').spawn;
-const prism = require('prism-media');
+// const prism = require('prism-media');
 const { performance } = require('perf_hooks');
 const { url } = require('../../../config.json');
 const xml2js = require('xml2js');
@@ -46,7 +46,7 @@ module.exports = class ChatWheelCommand extends Command {
   }
 
   async run(msg, args) {
-    //TODO: this if chain is fucking gross. find a way to make it less so
+    //TODO: this if chain is fucking gross. 
     let currentVoiceConnection = this.client.voiceConnections.get(msg.guild.id)
     let start = performance.now();
     if (msg.member.voiceChannel) {
@@ -59,48 +59,29 @@ module.exports = class ChatWheelCommand extends Command {
       } else if (args.params === 'leave') {
         currentVoiceConnection.disconnect();
       } else {
-          if (currentVoiceConnection) {
-            try {
-              let clipPromise = await axios({
-                method:'GET',
-                url: url + '/transcoded/' + args.params + '.wav',
-                responseType:'stream'
-              });
-              
-              //Transcode file to 48000 sampling rate
-              // const transcoder = new prism.FFmpeg({
-              //   args: [
-              //     '-analyzeduration', '0',
-              //     '-loglevel', '0',
-              //     '-f', 'wav',
-              //     '-ar', '48000',
-              //     '-ac', '2'
-              //   ],
-              // });
-  
-              const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
-
-              // let filename = 'transcoded/' + args.params + '.pcm';
-              // const dispatch = currentVoiceConnection.playFile('waow.wav');
-              // clipPromise.data.pipe(transcoder).pipe(fs.createWriteStream(filename));
-  
-              dispatch.on('start', () => {
-                msg.delete();
-                console.log(performance.now() - start);
-              }); 
-            } catch(e) {
-              console.log(e)
-              if (e.response.status == 404) {
-                msg.delete();
-                msg.reply(args.params + ' is not an available parameter. Please refer to !c help')
-              } else {
-                msg.reply('something is fucked');
-              }
+        if (currentVoiceConnection) {
+          let clipPromise;
+          try {
+            clipPromise = await axios({
+              method:'GET',
+              url: url + '/transcoded/' + args.params + '.wav',
+              responseType:'stream'
+            });
+          } catch(e) {
+            if (e.response.status == 404) {
+              msg.delete();
+              msg.reply(args.params + ' is not an available parameter. Please refer to !c help')
+            } else {
+              msg.reply('something is fucked');
             }
           }
-          // else {
-          //   msg.reply(`Join the [${this.currentVoiceConnection.channel.name}] voice channel if you want to use the ChatWheel`);
-          // }
+          const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
+
+          dispatch.on('start', () => {
+            msg.delete();
+            console.log(performance.now() - start);
+          });
+        }
       }
     } else {
       msg.reply('You must join a voice channel first!');
@@ -108,7 +89,7 @@ module.exports = class ChatWheelCommand extends Command {
     return;
   }
 
-  async replyHelp(msg) {
+  replyHelp(msg) {
     const {name, prefix} = this;
     let XMLParser = new xml2js.Parser();
     axios.get(url).then(res => {

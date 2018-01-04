@@ -2,7 +2,7 @@
   "name": "discboard",
   "version": "0.0.1",
   "scripts": {
-    "start": "nodemon server",
+    "start": "pm2 bot/bot.js",
     "build": "webpack --watch"
   },
   "author": "Solomon Tang",
@@ -13,9 +13,7 @@
     "common-tags": "^1.6.0",
     "discord.js": "^11.2.1",
     "discord.js-commando": "^0.9.0",
-    "ffmpeg-binaries": "^3.2.2-3",
     "node-opus": "^0.2.7",
-    "prism-media": "git://github.com/hydrabolt/prism-media.git#indev",
     "xml2js": "^0.4.19"
   }
 }
