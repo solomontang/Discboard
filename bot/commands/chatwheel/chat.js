@@ -81,14 +81,15 @@ module.exports = class ChatWheelCommand extends Command {
       dispatchTime = Date.now();
     });
 
-    // dispatch.on('end', async () => {
-    //   const pingMsg = await msg.reply('Pinging...');
-		// 	return pingMsg.edit(oneLine`
-		// 		${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
-		// 		Pong! The message round-trip took ${dispatchTime - msg.createdTimestamp}ms.
-		// 		The clip fetch time was ${fetchTime}ms.
-		// 	`);
-    // })
+    dispatch.on('end', async () => {
+      console.log(performance.now() - fetchStart)
+      // const pingMsg = await msg.reply('Pinging...');
+			// return pingMsg.edit(oneLine`
+			// 	${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
+			// 	Pong! The message round-trip took ${dispatchTime - msg.createdTimestamp}ms.
+			// 	The clip fetch time was ${fetchTime}ms.
+			// `);
+    })
   }
 
   async replyHelp(msg) {
