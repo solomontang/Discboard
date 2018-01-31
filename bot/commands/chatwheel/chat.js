@@ -78,11 +78,11 @@ module.exports = class ChatWheelCommand extends Command {
 
     dispatch.on('start', () => {
       msg.delete();
-      dispatchTime = Date.now();
+      dispatchTime = performance.now();
     });
 
     dispatch.on('end', async () => {
-      console.log(performance.now() - fetchStart)
+      console.log(dispatchTime - fetchStart)
       // const pingMsg = await msg.reply('Pinging...');
 			// return pingMsg.edit(oneLine`
 			// 	${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
