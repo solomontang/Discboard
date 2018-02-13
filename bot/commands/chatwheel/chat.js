@@ -43,7 +43,7 @@ module.exports = class ChatWheelCommand extends Command {
       } else if (args.params === 'join') {
         msg.member.voiceChannel.join(); //What is the impact of (not) having `await`
       } else if (args.params === 'leave') {
-        currentVoiceConnection.disconnect();
+        if (currentVoiceConnection) currentVoiceConnection.disconnect();
       } else {
         if (currentVoiceConnection) {
           this.streamClip(msg, args.params, start)
@@ -67,8 +67,11 @@ module.exports = class ChatWheelCommand extends Command {
       });
     } catch(e) {
       if (e.response.status == 404) {
-        msg.delete();
-        msg.reply(param + ' is not an available parameter. Please refer to !c help')
+        msg.delete()
+          .then(msg => 
+            msg.reply(param + ' is not an available parameter. Please refer to `!c help`')
+          )
+          .catch(console.error);
       } else {
         msg.reply('something is fucked');
       }
@@ -77,18 +80,14 @@ module.exports = class ChatWheelCommand extends Command {
     const dispatch = currentVoiceConnection.playConvertedStream(clipPromise.data);
 
     dispatch.on('start', () => {
-      msg.delete();
       dispatchTime = performance.now();
     });
 
     dispatch.on('end', async () => {
       console.log(dispatchTime - fetchStart)
-      // const pingMsg = await msg.reply('Pinging...');
-			// return pingMsg.edit(oneLine`
-			// 	${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
-			// 	Pong! The message round-trip took ${dispatchTime - msg.createdTimestamp}ms.
-			// 	The clip fetch time was ${fetchTime}ms.
-			// `);
+      msg.delete()
+        .then(msg => console.log(`Deleted message from ${msg.author}`))
+        .catch(console.error);
     })
   }
 
